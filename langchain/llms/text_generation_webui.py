@@ -1,12 +1,10 @@
 """Wrapper around NLPCloud APIs."""
-from typing import Any, Dict, List, Mapping, Optional
-
-from pydantic import BaseModel, Extra, root_validator
-
-from langchain.llms.base import LLM
-from langchain.utils import get_from_dict_or_env
+from typing import Any, List, Mapping, Optional
 
 import requests
+from pydantic import BaseModel, Extra
+
+from langchain.llms.base import LLM
 
 
 class TextGenerationWebUI(LLM, BaseModel):
@@ -31,14 +29,19 @@ class TextGenerationWebUI(LLM, BaseModel):
     """What sampling temperature to use."""
     top_p: int = 1
     """Total probability mass of tokens to consider at each step."""
+
     typical_p: int = 1
-    """Local typicality measures how similar the conditional probability of predicting a target token next is to the expected conditional probability of predicting a random token next, given the partial text already generated.""" ""
+    """Local typicality measures how similar the conditional probability of 
+    predicting a target token next is to the expected conditional probability of
+    predicting a random token next, given the partial text already generated."""
+
     repetition_penalty: float = 1.0
     """Penalizes repeated tokens. 1.0 means no penalty."""
     encoder_repetition_penalty: float = 1.0
     """Penalizes repeated tokens. 1.0 means no penalty."""
     top_k: int = 30
-    """The number of highest probability vocabulary tokens to keep for top-k-filtering.."""
+    """The number of highest probability vocabulary tokens to keep 
+    for top-k-filtering.."""
     min_length: int = 1
     """The minimum number of tokens to generate in the completion."""
     no_repeat_ngram_size: int = 0

@@ -5,6 +5,7 @@ import requests
 from pydantic import BaseModel, Extra
 
 from langchain.llms.base import LLM
+from langchain.llms.utils import enforce_stop_tokens
 
 
 class TextGenerationWebUI(LLM, BaseModel):
@@ -21,25 +22,25 @@ class TextGenerationWebUI(LLM, BaseModel):
     model_name: str = "text-generation-webui"
     """Model name to use."""
 
-    max_length: int = 256
+    max_length: int = 512
     """The maximum number of tokens to generate in the completion."""
     do_sample: bool = True
     """Whether to use sampling (True) or greedy decoding."""
-    temperature: float = 0.7
+    temperature: float = 0.5
     """What sampling temperature to use."""
-    top_p: int = 1
+    top_p: int = 0.95
     """Total probability mass of tokens to consider at each step."""
 
-    typical_p: int = 1
+    typical_p: int = 0.5
     """Local typicality measures how similar the conditional probability of 
     predicting a target token next is to the expected conditional probability of
     predicting a random token next, given the partial text already generated."""
 
-    repetition_penalty: float = 1.0
+    repetition_penalty: float = 1.2
     """Penalizes repeated tokens. 1.0 means no penalty."""
     encoder_repetition_penalty: float = 1.0
     """Penalizes repeated tokens. 1.0 means no penalty."""
-    top_k: int = 30
+    top_k: int = 50
     """The number of highest probability vocabulary tokens to keep 
     for top-k-filtering.."""
     min_length: int = 1
@@ -108,8 +109,6 @@ class TextGenerationWebUI(LLM, BaseModel):
 
                 response = nlpcloud("Tell me a joke.")
         """
-        if stop is not None:
-            raise ValueError("stop kwargs are not permitted.")
         response = requests.post(
             self.endpoint,
             json={
@@ -132,5 +131,13 @@ class TextGenerationWebUI(LLM, BaseModel):
                 ]
             },
         ).json()
+        text = response["data"][0]
 
-        return response["data"][0]
+        if stop is not None:
+            # I believe this is required since the stop tokens
+            # are not enforced by the model parameters
+            answer = text[len(prompt) - 1 :]
+
+            text = enforce_stop_tokens(answer, stop)
+
+        return text
